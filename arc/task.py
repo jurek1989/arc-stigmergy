@@ -187,19 +187,34 @@ def load_all() -> dict[str, list[Task]]:
     return {f"{d}/{s}": load_split(d, s) for d in DATASETS for s in SPLITS}
 
 
-def find_task(task_id: str) -> Task:
-    """Look a task up by id across all splits.
+def find_task(task_id: str, *, dataset: str | None = None, split: str | None = None) -> Task:
+    """Look a task up by id, optionally restricted to one dataset or split.
 
-    Raises if the id is ambiguous, which happens for the many tasks shared between
-    ARC-AGI-1 and ARC-AGI-2 -- use :func:`load_split` and index it yourself in that case.
+    Most ids are ambiguous across the two datasets -- 767 of the 1000 ARC-AGI-2 training
+    tasks also live somewhere in ARC-AGI-1 -- so a bare id usually needs a ``dataset`` to
+    resolve. Within a single dataset ids are unique, since neither dataset shares ids
+    between its own training and evaluation splits.
+
+    Raises ``KeyError`` if nothing matches or if the id is still ambiguous.
     """
-    hits = [t for tasks in load_all().values() for t in tasks if t.task_id == task_id]
+    # Look the file up by name rather than loading whole splits: this is what the
+    # visualisation CLI calls, and loading 1120 tasks to render one of them is the
+    # difference between an instant look and a ten-second wait.
+    hits = []
+    for d in DATASETS:
+        for s in SPLITS:
+            if (dataset is not None and d != dataset) or (split is not None and s != split):
+                continue
+            path = data_root() / d / s / f"{task_id}.json"
+            if path.is_file():
+                hits.append(load_task(path, source=f"{d}/{s}"))
     if not hits:
-        raise KeyError(f"no task with id {task_id!r}")
+        where = f" in {dataset or 'any dataset'}/{split or 'any split'}"
+        raise KeyError(f"no task with id {task_id!r}{where}")
     if len(hits) > 1:
         raise KeyError(
-            f"task id {task_id!r} occurs in {len(hits)} splits: "
-            f"{', '.join(t.source for t in hits)}"
+            f"task id {task_id!r} occurs in {len(hits)} splits "
+            f"({', '.join(t.source for t in hits)}); pass dataset= or split= to disambiguate"
         )
     return hits[0]
 

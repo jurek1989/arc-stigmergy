@@ -228,7 +228,11 @@ def save(fig: Figure, path: str | Path, *, dpi: int = 160) -> Path:
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description="Render ARC tasks to a PNG.")
     parser.add_argument("--task", help="task id to render in full")
-    parser.add_argument("--dataset", default="arc-agi-2", help="dataset for --split")
+    parser.add_argument(
+        "--dataset",
+        default="arc-agi-2",
+        help="dataset to search or sheet; most task ids exist in both datasets",
+    )
     parser.add_argument("--split", help="render a contact sheet of this split")
     parser.add_argument("--limit", type=int, default=24, help="tasks on the contact sheet")
     parser.add_argument("--out", default="task.png", help="output PNG path")
@@ -236,7 +240,7 @@ def main(argv: list[str] | None = None) -> None:
 
     mpl.use("Agg")
     if args.task:
-        fig = plot_task(find_task(args.task))
+        fig = plot_task(find_task(args.task, dataset=args.dataset, split=args.split))
     elif args.split:
         fig = plot_tasks(load_split(args.dataset, args.split)[: args.limit])
     else:
