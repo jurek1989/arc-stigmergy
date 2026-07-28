@@ -1,0 +1,26 @@
+[project]
+name = "arc-stigmergy"
+version = "0.1.0"
+description = "ARC-AGI research scaffolding: measurement apparatus for a stigmergic program-synthesis experiment"
+requires-python = ">=3.11"
+dependencies = [
+    "numpy>=1.26",
+    "matplotlib>=3.8",
+]
+
+# Deliberately no ML frameworks. Nothing here trains a network, and nothing calls an
+# external API. See CLAUDE.md.
+
+[project.optional-dependencies]
+dev = ["polars>=1.0"]  # only for eyeballing results/*.csv
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["arc"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
