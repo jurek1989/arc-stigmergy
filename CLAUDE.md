@@ -28,6 +28,7 @@ arc/
   baselines.py  trivial solvers                 (identity, most-common-output, random D4)
 scripts/
   run_baselines.py
+tests/          pytest; the data-dependent ones skip when data/ is empty
 data/           task JSON, downloaded, gitignored — see data/README.md
 results/        run output, gitignored
 ```
@@ -39,6 +40,8 @@ python scripts/run_baselines.py                       # all baselines on arc-agi
 python scripts/run_baselines.py --limit 20 --no-save  # smoke test
 python -m arc.viz --task 0934a4d8 --out task.png
 python -m arc.viz --split evaluation --limit 24 --out sheet.png
+python -m pytest                                      # 101 tests, ~11s
+python -m pytest tests/test_harness.py                # no data needed, instant
 ```
 
 Everything must stay fast enough to run interactively. Loading the 120-task evaluation set
@@ -101,6 +104,22 @@ is already sitting in its input. A partial metric only means something relative 
 Note also that `random-symmetry` and `identity` have *identical* `color_histogram_distance`
 (0.2184) — D4 permutes cells and preserves the colour histogram exactly. If that ever stops
 holding, the metric is broken.
+
+## Tests
+
+The point of the suite is the official metric. Nothing else in the project can be checked
+against an external reference, so if `evaluate` computed the score subtly wrongly — counted
+a third attempt, or let a task pass with one of two test inputs right — every experiment
+afterwards would be invalid and nothing would look amiss. Those rules are pinned on
+synthetic tasks built in memory, so they hold even with `data/` empty.
+
+The second half is the harness surviving broken solvers: exceptions, `None`, wrong list
+lengths, out-of-range colours, oversized grids, in-place mutation of a cached task. Search
+solvers fail in creative ways and a run must degrade to a bad score, not die at task 300.
+
+The calibration floors quoted below are asserted in `tests/test_baselines.py`. They are
+the reference every partial metric is read against, so they are not allowed to drift
+silently — if a test fails there, update the numbers here in the same commit.
 
 ## Data
 

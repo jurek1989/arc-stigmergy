@@ -62,7 +62,12 @@ def data_root() -> Path:
 
 
 def _as_grid(raw: list[list[int]], where: str) -> Grid:
-    grid = np.asarray(raw, dtype=np.uint8)
+    try:
+        grid = np.asarray(raw, dtype=np.uint8)
+    except ValueError as exc:
+        # Ragged rows land here, and numpy's own message ("inhomogeneous shape after 1
+        # dimensions") says nothing about which file is malformed.
+        raise ValueError(f"{where}: not a rectangular 2D grid ({exc})") from exc
     if grid.ndim != 2 or grid.size == 0:
         raise ValueError(f"{where}: expected a non-empty 2D grid, got shape {grid.shape}")
     if not (1 <= grid.shape[0] <= MAX_GRID_SIDE and 1 <= grid.shape[1] <= MAX_GRID_SIDE):

@@ -12,7 +12,10 @@ dependencies = [
 # external API. See CLAUDE.md.
 
 [project.optional-dependencies]
-dev = ["polars>=1.0"]  # only for eyeballing results/*.csv
+dev = [
+    "pytest>=8.0",
+    "polars>=1.0",  # only for eyeballing results/*.csv
+]
 
 [build-system]
 requires = ["setuptools>=68"]
@@ -20,6 +23,11 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
 packages = ["arc"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+# Tests that need the task data skip themselves when data/ is empty, so a fresh clone
+# still gets a meaningful run.
 
 [tool.ruff]
 line-length = 100
