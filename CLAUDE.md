@@ -67,6 +67,18 @@ for a future solver to amortise search across a task's test inputs.
 The harness never trusts a solver: exceptions are caught and recorded, malformed
 predictions are repaired and flagged. A broken solver produces a bad score, not a dead run.
 
+## Compute
+
+**Compute means: the number of candidate programs evaluated against a task's train pairs.**
+
+This is the single definition for the whole project. It is the same quantity the harness
+records per task as `TaskResult.steps`, and the same quantity `arc.dynamics` accumulates as
+`EpochSnapshot.compute`. Wall-clock time is recorded too but is not the axis anything is
+plotted against — it varies with the machine, and the question here is how much *search* a
+result cost, not how fast the laptop was that evening.
+
+Every module that touches the quantity points back here rather than restating it.
+
 ## Conventions
 
 * **Grids are read-only `numpy.uint8` arrays.** Tasks are cached per process, so mutation
